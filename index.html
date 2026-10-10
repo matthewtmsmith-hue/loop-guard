@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="robots" content="noindex" />
+  <link rel="icon" href="data:," />
+  <title>Loop Guard — Sota</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/game.css" />
+  <link rel="stylesheet" href="css/web.css" />
+</head>
+<body>
+  <div class="app">
+    <section class="screen active" data-screen="title">
+      <div class="title-wrap">
+        <div class="who">SOTA ROUTE  ·  PHASE 1</div>
+        <h1>LOOP GUARD</h1>
+        <p class="sub">Four slots. A city. Three doors. Sunday always happens. Keep the brain. Keep half the pile.</p>
+        <div class="title-actions">
+          <button class="primary" id="btn-new">New Game</button>
+          <button id="btn-continue">Continue</button>
+          <button class="ghost" id="btn-settings">Video path</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="play">
+      <div class="stage" id="stage">
+        <img id="bg" class="bg" alt="" />
+        <div class="hud">
+          <div class="stat" id="stat-loop">LOOP <b>1</b></div>
+          <div class="stat" id="stat-day">DAY <b>1</b>/28</div>
+          <div class="stat" id="stat-slot">MORNING</div>
+          <div class="week-pips" id="pips"></div>
+          <div class="grow"></div>
+          <div class="stat" id="stat-money">£ <b>80</b></div>
+          <div class="stat" id="stat-int">INT <b>0</b></div>
+          <div class="stat" id="stat-str">STR <b>3</b></div>
+          <button class="ghost hud-phone" id="hud-phone" title="Kaito's phone">PHONE<span class="hud-phone-badge" id="hud-phone-badge" hidden>1</span></button>
+          <button class="ghost" id="btn-full">Full</button>
+          <button class="ghost" id="btn-title">Title</button>
+          <button class="ghost" id="btn-settings-2">Path</button>
+          <button class="ghost edi-mute" id="btn-sound-mute" title="Mute game audio">SOUND ON</button>
+          <button class="ghost edi-mute" id="btn-edi-mute" title="Mute EDI scripts">SCRIPT ON</button>
+        </div>
+        <div id="hub-map" class="hub-map"></div>
+        <img class="sprite" id="sprite" alt="" />
+        <div id="char-menu" class="char-menu"></div>
+        <div class="dock">
+          <div class="actions" id="actions"></div>
+        </div>
+        <div class="route-hud" id="route-hud">
+          <!-- DESKTOP HOTFIX 2026-10-06 (#12): Boss DUE block removed; Himari block kept -->
+          <div class="route-block">
+            <div class="route-meta"><div class="route-kicker">Sota</div><div id="route-mood">Warm</div><div class="route-sub" id="route-hint"></div></div>
+            <img class="route-face" id="face-himari" alt="Himari" src="art/sprite/gf_home_idle.png" />
+          </div>
+        </div>
+        <div class="textbox" id="textbox">
+          <div class="who" id="who"></div>
+          <div class="line" id="line"></div>
+          <div class="row"><button id="advance" style="display:none">Continue</button></div>
+        </div>
+        <div class="peek-layer" id="peek-layer">
+            <div class="peek-door" id="peek-door">
+              <video id="peek-vid" playsinline muted></video>
+              <div class="missing" id="peek-miss">
+                <div>No file on this path. The rail still runs.</div>
+                <code id="peek-miss-path"></code>
+              </div>
+            </div>
+            <div class="peek-ui">
+              <button id="peek-more">Open the door more</button>
+              <button class="danger" id="peek-leave">Leave</button>
+            </div>
+            <div class="textbox peek-box">
+              <div class="who" id="peek-who"></div>
+              <div class="line" id="peek-line"></div>
+              <div class="row"><button id="peek-next">Continue</button></div>
+            </div>
+          </div>
+          <div class="phone-layer" id="phone-layer">
+            <div class="phone-fit" id="phone-fit"><div class="phone-frame" id="phone-frame">
+              <div class="phone-chrome">
+                <button type="button" id="phone-back" class="phone-top-back" aria-label="Back">‹</button>
+                <span id="phone-clock">09:14</span>
+                <span class="phone-status" aria-hidden="true">
+                  <svg width="16" height="12" viewBox="0 0 16 12"><path fill="#f2f2f7" d="M1.2 8.4 0 9.6A11 11 0 0 1 16 9.6l-1.2-1.2A9.2 9.2 0 0 0 1.2 8.4Zm3.3-2.5L3.3 7.1a6.6 6.6 0 0 1 9.4 0l-1.2-1.2a4.9 4.9 0 0 0-7 0Zm3.3-2.6L6.6 4.5a2.8 2.8 0 0 1 2.8 0L8 3.3a1.2 1.2 0 0 0-1.6 0Z"/></svg>
+                  <svg width="24" height="12" viewBox="0 0 24 12"><rect x="0.6" y="1.2" width="18" height="9.6" rx="2" fill="none" stroke="#f2f2f7" stroke-width="1.2"/><rect x="2" y="2.6" width="15.2" height="6.8" rx="1" fill="#f2f2f7"/><rect x="19.4" y="4" width="1.6" height="4" rx="0.6" fill="#f2f2f7"/></svg>
+                </span>
+                <button type="button" id="phone-close" class="phone-top-close" aria-label="Close">×</button>
+              </div>
+              <div class="phone-stack" id="phone-stack">
+                <div class="screen active" data-ph="home" id="ph-home"></div>
+                <div class="screen app-messages" data-ph="messages" id="ph-messages">
+                  <div class="phone-title" id="sms-title">Himari</div>
+                  <div class="phone-scroll"><div class="phone-list" id="phone-list"></div></div>
+                </div>
+                <div class="screen app-gallery" data-ph="gallery" id="ph-gallery">
+                  <div class="phone-title" id="phone-title">Routes</div>
+                  <div class="phone-scroll"><div class="phone-list" id="gallery-list"></div></div>
+                </div>
+                <div class="screen app-nightly" data-ph="nightly" id="ph-nightly"></div>
+                <div class="screen app-settings" data-ph="settings" id="ph-settings"></div>
+              </div>
+            </div>
+            </div>
+          </div>
+          <div class="bar-layer" id="bar-layer">
+            <div class="bar-card">
+              <div class="who">SHIFT</div>
+              <p>Stop the tick in green. Blue sliver is bonus. Space or click.</p>
+              <div class="bar-track">
+                <div class="zone grey"></div>
+                <div class="zone green"></div>
+                <div class="zone blue"></div>
+                <div class="bar-fill" id="bar-fill"></div>
+              </div>
+              <button class="primary" id="bar-hit">Stop</button>
+            </div>
+          </div>
+      </div>
+    </section>
+
+    <section class="screen rewind-screen" data-screen="rewind">
+      <div class="rewind-card">
+        <div class="who">SUNDAY</div>
+        <h2 id="rewind-body"></h2>
+        <p id="rewind-ask"></p>
+        <div class="title-actions">
+          <button class="primary" id="rewind-yes">Rewind time</button>
+          <button class="ghost" id="rewind-no">Stay here</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal" id="settings">
+    <div class="card">
+      <h2>PART 1 video root</h2>
+      <p>HTTP folder that contains the scene files.</p>
+      <p>
+        <code>SCENE_BOSS_WORKAREA_BJ_1.mp4</code> … <code>_5</code><br />
+        <code>SCENE_BOSS_LOCKER_BATHROOM_RIDE_1.mp4</code> … <code>_5</code><br />
+        <code>SCENE_BOSS_FINAL_MISSIONARY_1.mp4</code> … <code>_5</code><br />
+        <code>SCENE_BOSS_WORKAREA_RIDE_1.mp4</code> … <code>_3</code><br />
+        <code>SCENE_BOSS_WORKAREA_SPOON_1.mp4</code> … <code>_5</code><br />
+        <code>SCENE_BOSS_LOCKER_MATEPRESS_1.mp4</code> … <code>_3</code><br />
+        <code>SCENE_BOSS_LOCKER_MISSIONARY_1.mp4</code> … <code>_4</code><br />
+        <code>SCENE_BOSS_FINAL_DOGGY_1.mp4</code> … <code>_4</code><br />
+        <code>SCENE_BOSS_FINAL_COWGIRL_1.mp4</code> … <code>_4</code><br />
+        <code>SCENE_BOSS_OFFICE_RD_DOGGY_1.mp4</code> … <code>_6</code><br />
+        <code>SCENE_BOSS_FINAL_SUCK_1.mp4</code>
+      </p>
+      <input id="media-root" spellcheck="false" />
+      <p style="margin-top:16px">EDI base (default <code>http://localhost:5000</code>)</p>
+      <input id="edi-url" spellcheck="false" />
+      <div class="row">
+        <button class="ghost" id="set-cancel">Cancel</button>
+        <button class="primary" id="set-save">Save path</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script src="js/edi.js"></script>
+  <script>window.LG_WEB=true;window.LG_WEB_STAMP='2026-10-09 15:40 BST · web 2026-10-10 08:14 BST';</script>
+  <script src="js/web.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/dialogue.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

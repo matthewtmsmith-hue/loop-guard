@@ -1,0 +1,42 @@
+/* LG_WEB phone/web layer */
+html.lg-web, html.lg-web body { height: 100%; height: 100dvh; -webkit-text-size-adjust: 100%; touch-action: manipulation; }
+html.lg-web body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+html.lg-web #btn-settings, html.lg-web #btn-settings-2, html.lg-web #btn-edi-mute, html.lg-web #settings { display: none !important; }
+html.lg-nofs #btn-full { display: none !important; }
+html.lg-web button { min-height: 44px; min-width: 44px; }
+@media (hover: none) { html.lg-web button:hover:not(:disabled) { border-color: var(--line); color: var(--ink); } html.lg-web button.primary:hover:not(:disabled){ color: var(--amber-2); border-color:#6b4e24; } }
+html.lg-web .web-stamp { margin-top: 18px; font-family: var(--mono); font-size: 11px; color: var(--dim); }
+html.lg-web #peek-miss { background: #08080a; color: var(--muted); text-align: center; line-height: 1.6; align-items: center; justify-content: center; flex-direction: column; }
+html.lg-web #peek-miss b { color: var(--amber-2); letter-spacing: .12em; text-transform: uppercase; font-size: 12px; }
+html.lg-web #peek-miss code { display: block; margin-top: 8px; font-size: 10px; color: var(--dim); word-break: break-all; }
+html.lg-web #ny-clip-card { background: #08080a; color: var(--muted); padding: 40px 12px; text-align: center; border-radius: 8px; }
+html.lg-web #ny-clip-meta { white-space: pre-wrap; }
+/* phones */
+@media (max-width: 900px), (max-height: 500px) {
+  html.lg-web .title-wrap { padding: 20px 20px calc(20px + env(safe-area-inset-bottom)); }
+  html.lg-web .title-wrap h1 { font-size: 40px; }
+  html.lg-web .hud { height: auto; min-height: 48px; flex-wrap: wrap; row-gap: 2px; gap: 6px; padding: 4px 8px; font-size: 11px; background: rgba(8,9,12,.78); }
+  html.lg-web .hud .grow { flex: 1 0 0; }
+  html.lg-web .hud button { padding: 6px 8px; font-size: 11px; }
+  html.lg-web .week-pips { gap: 3px; } html.lg-web .pip { width: 10px; }
+  html.lg-web .dock { top: 96px; left: 8px; max-height: calc(100% - 110px); overflow-y: auto; }
+  html.lg-web .textbox { left: 2%; right: 2%; bottom: 2%; padding: 10px 12px; font-size: 15px; max-height: 45%; overflow-y: auto; }
+  html.lg-web .route-hud { transform: scale(.8); transform-origin: top right; }
+}
+@media (max-height: 500px) and (orientation: landscape) {
+  html.lg-web .hud { flex-wrap: nowrap; overflow-x: auto; min-height: 44px; }
+  html.lg-web .dock { top: 58px; max-height: calc(100% - 60px); }
+  html.lg-web .textbox { max-height: 40%; min-height: 0; font-size: 14px; }
+}
+@media (orientation: portrait) and (max-width: 600px) {
+  html.lg-web .sprite { max-width: 92%; height: 70%; top: 12%; }
+  html.lg-web .sprite.sota { max-width: 100%; }
+  html.lg-web .bg { object-position: center; }
+}
+/* no video in web build: show the placeholder card across the whole door (crack width is a video effect only) */
+html.lg-web .peek-door { clip-path: none !important; }
+html.lg-web .peek-door video { display: none !important; }
+html.lg-web #peek-miss { position: absolute; inset: 0; justify-content: flex-start !important; padding: max(60px, 14vh) 24px 0; }
+@media (max-height: 500px) { html.lg-web #peek-miss { padding: 50px 24px 0 calc(24px + 34vw); line-height: 1.35; } }
+html.lg-web #peek-miss > div { max-width: 420px; }
+html.lg-web .peek-ui { width: max(160px, min(240px, 32vw)); }
