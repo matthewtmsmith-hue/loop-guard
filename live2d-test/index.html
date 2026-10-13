@@ -13,13 +13,13 @@
 const W=696,H=900;const WT=await (await fetch('weights.json')).json(),AN=await (await fetch('anchors.json')).json();
 const app=new PIXI.Application({resizeTo:window,backgroundAlpha:0,antialias:true,resolution:Math.min(devicePixelRatio,2),autoDensity:true});
 document.body.prepend(app.view);
-const T={};for(const n of ['back','body','front','eyes_half','eyes_closed','mouth_small','mouth_wide'])T[n]=await PIXI.Assets.load(n+'.png');
+const T={};for(const n of ['back','body','front','eyes_half','eyes_closed'])T[n]=await PIXI.Assets.load(n+'.png');
 const root=new PIXI.Container();app.stage.addChild(root);
 function mesh(tex,wkey){const m=new PIXI.SimplePlane(tex,WT.gx,WT.gy);const b=m.geometry.getBuffer('aVertexPosition');return{m,b,base:Float32Array.from(b.data),w:wkey?WT[wkey].flat():null,key:wkey}}
 const back=mesh(T.back,'back'),body=mesh(T.body,null),front=mesh(T.front,'front');
 const spr=(t,a)=>{const s=new PIXI.Sprite(t);s.anchor.set(.5);s.visible=false;s.home={x:a[0]+t.width/2,y:a[1]+t.height/2};return s};
-const eh=spr(T.eyes_half,AN.eyes),ec=spr(T.eyes_closed,AN.eyes),ms=spr(T.mouth_small,AN.mouth),mw=spr(T.mouth_wide,AN.mouth);
-root.addChild(back.m,body.m,eh,ec,ms,mw,front.m);
+const eh=spr(T.eyes_half,AN.eyes),ec=spr(T.eyes_closed,AN.eyes);
+root.addChild(back.m,body.m,eh,ec,front.m);
 const sm=(a,b,x)=>{x=Math.min(1,Math.max(0,(x-a)/(b-a)));return x*x*(3-2*x)};
 let still=false;const TAU=Math.PI*2;
 function deform(x,y,t,w,layer){
@@ -44,11 +44,11 @@ const Q=new URLSearchParams(location.search),FZ=Q.has('freeze')?+Q.get('freeze')
 let blinkAt=1.0,blinkT=-1,mouth=0;const t0=performance.now();
 app.ticker.add(()=>{const t=FZ!==null?FZ:(performance.now()-t0)/1000;
   upd(back,t);upd(body,t);upd(front,t);
-  for(const s of [eh,ec,ms,mw]){const p=deform(s.home.x,s.home.y,t,0,'body');s.position.set(p[0],p[1]);s.rotation=p[2];}
+  for(const s of [eh,ec]){const p=deform(s.home.x,s.home.y,t,0,'body');s.position.set(p[0],p[1]);s.rotation=p[2];}
   if(FZ===null&&t>blinkAt&&blinkT<0)blinkT=t;
   let e=0;if(blinkT>=0){const u=t-blinkT;e=u<.035?1:u<.105?2:u<.14?1:0;if(u>=.14){blinkT=-1;blinkAt=t+(Math.random()<.18?.22:2.2+Math.random()*3.5)}}
-  if(Q.has('eye'))e=+Q.get('eye');if(Q.has('mouth'))mouth=+Q.get('mouth');
-  eh.visible=e===1;ec.visible=e===2;for(const [s,v] of [[ms,1],[mw,2]]){const tgt=mouth===v?1:0;s.alpha+= (tgt-s.alpha)*0.55;if(Math.abs(tgt-s.alpha)<.02)s.alpha=tgt;s.visible=s.alpha>0;}
+  if(Q.has('eye'))e=+Q.get('eye');
+  eh.visible=e===1;ec.visible=e===2;
 });
 const lines=["Oh — you're home. I saved you some rice, it's still warm.","Don't look at me like that. I'm just tired, okay?","Do you ever think about leaving this town? Just… going?"];let li=0,typing=null;
 let lastChange=0;
@@ -57,7 +57,7 @@ function shape(c,prev){const now=performance.now();if(!c||/[\s.,!?…—'"]/.tes
   if(/[aoAO]/.test(c)&&prev!==2&&Math.random()<.45)n=2; else if(/[aeiouyAEIOUY]/.test(c))n=prev===1?0:1; else n=prev===0?1:0;
   if(n!==prev)lastChange=now;return n}
 function say(){clearInterval(typing);const s=lines[li++%lines.length];let n=0;const el=document.getElementById('txt');el.textContent='';
-  typing=setInterval(()=>{n++;el.textContent=s.slice(0,n);mouth=shape(s[n-1],mouth);if(n>=s.length){clearInterval(typing);setTimeout(()=>mouth=0,60)}},48)}
+  typing=setInterval(()=>{n++;el.textContent=s.slice(0,n);if(n>=s.length){clearInterval(typing);}},48)}
 document.getElementById('talk').onclick=say;
 document.getElementById('still').onclick=e=>{still=!still;e.target.textContent=still?'Live':'Static'};
 if(!Q.has('freeze'))setTimeout(say,1400);
