@@ -1367,8 +1367,10 @@
 
   function setSprite(face) {
     const spr = $("sprite");
+    const live = window.LG_HIMARI_LIVE;
     if (!face) {
       spr.style.display = "none";
+      if (live) live.hide();
       return;
     }
     spr.style.display = "block";
@@ -1376,11 +1378,15 @@
     if (String(face).indexOf("sota_") === 0) {
       spr.src = ART[face] || ART.sota_idle;
       spr.classList.add("sota");
+      if (live) live.hide();
     } else if (face === "boss" || face === "boss_threat" || face === "boss_smug" || face === "boss_bored") {
       spr.src = ART[face];
       spr.classList.add("boss");
+      if (live) live.hide();
     } else {
       spr.src = ART[face] || ART.idle;
+      if (live && live.enabled()) live.show(face);
+      else if (live) live.hide();
     }
   }
 
@@ -1692,7 +1698,10 @@
     hud();
     setBg();
     $("hub-map").style.display = S.room === "hub" ? "block" : "none";
-    if (!peek) $("peek-layer").classList.remove("on");
+    if (!peek) {
+      $("peek-layer").classList.remove("on");
+      if (window.LG_HIMARI_LIVE) window.LG_HIMARI_LIVE.resume();
+    }
     $("bar-layer").classList.remove("on");
     hideMenu();
     if (S.room === "hub") renderHub();
@@ -3348,6 +3357,7 @@
     if (!el) return;
     el.innerHTML = `<div class="phone-title">Settings</div>
       <div class="phone-scroll"><div class="phone-list">
+        <button class="phone-item" id="set-live"><b>Animated Himari</b><small>${(window.LG_HIMARI_LIVE && window.LG_HIMARI_LIVE.enabled()) ? "on" : "off"}</small></button>
         <div class="phone-item"><b>Debug</b><small>always visible</small></div>
         <button class="phone-item" id="dbg-cash"><b>Add \u00A35000</b><small>debug</small></button>
         <button class="phone-item" id="dbg-int"><b>Add 50 intelligence</b><small>debug</small></button>
@@ -3357,6 +3367,14 @@
         <button class="phone-item" id="dbg-arm"><b>Arm Sota</b><small>${S.sotaArmed ? "armed" : "not armed"}</small></button>
         <button class="phone-item" id="dbg-unlockall"><b>Unlock all scenes</b><small>${S.galleryAll ? "unlocked - Gallery + Nightly Videos" : "Gallery only, no story change"}</small></button>
       </div></div>`;
+    const liveBtn = $("set-live");
+    if (liveBtn && window.LG_HIMARI_LIVE) liveBtn.onclick = () => {
+      const on = !window.LG_HIMARI_LIVE.enabled();
+      window.LG_HIMARI_LIVE.setEnabled(on);
+      paintSettings();
+      renderRoom();
+      toast(on ? "Himari animated" : "Himari still");
+    };
     const cash = $("dbg-cash");
     const intel = $("dbg-int");
     const dayBtn = $("dbg-day");
@@ -4440,6 +4458,7 @@
     hideBox();
     closePhone();
     $("peek-layer").classList.add("on");
+    if (window.LG_HIMARI_LIVE) window.LG_HIMARI_LIVE.pause();
     $("peek-door").style.setProperty("--crack", (gallery || homeSex) ? "100%" : "18%");
     $("peek-more").disabled = gallery || homeSex;
     $("peek-more").style.display = (gallery || homeSex) ? "none" : "";
@@ -4620,6 +4639,7 @@
     v.removeAttribute("src");
     peek = null;
     $("peek-layer").classList.remove("on");
+      if (window.LG_HIMARI_LIVE) window.LG_HIMARI_LIVE.resume();
     $("peek-more").style.display = "";
     const nightlyReturn = !!peekNightlyReturn;
     if (EDI()) EDI().idle();
@@ -4879,6 +4899,17 @@
       $("settings").classList.remove("on");
       toast("Media root saved.");
     };
+    const liveBox = $("set-himari-live");
+    if (liveBox && window.LG_HIMARI_LIVE) {
+      liveBox.checked = window.LG_HIMARI_LIVE.enabled();
+      liveBox.onchange = () => {
+        window.LG_HIMARI_LIVE.setEnabled(liveBox.checked);
+        const cur = $("sprite") && $("sprite").style.display !== "none" ? null : null;
+        if (!liveBox.checked) window.LG_HIMARI_LIVE.hide();
+        else if (typeof setSprite === "function") { /* re-show on next render */ }
+        renderRoom();
+      };
+    }
     $("set-cancel").onclick = () => $("settings").classList.remove("on");
     $("btn-title").onclick = () => showScreen("title");
     if ($("btn-full")) {
@@ -4907,6 +4938,8 @@
     };
     if ($("hud-phone")) $("hud-phone").onclick = () => openPhone();
     if ($("sprite")) $("sprite").onclick = openMenu;
+    const liveCanvas = $("himari-live");
+    if (liveCanvas) liveCanvas.onclick = openMenu;
     if ($("btn-edi-mute")) {
       $("btn-edi-mute").onclick = () => {
         if (!EDI()) return;

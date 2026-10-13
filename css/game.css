@@ -108,6 +108,12 @@ button.ghost { background: transparent; }
 .sprite.sota {
   max-width: 96%;
 }
+#himari-live {
+  display: none;
+  pointer-events: auto;
+  background: transparent;
+}
+#himari-live.on { display: block; }
 
 .textbox {
   position: absolute; left: 4%; right: 4%; bottom: 3.5%; z-index: 4;

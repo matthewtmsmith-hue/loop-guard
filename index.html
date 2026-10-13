@@ -49,6 +49,7 @@
         </div>
         <div id="hub-map" class="hub-map"></div>
         <img class="sprite" id="sprite" alt="" />
+        <canvas class="sprite" id="himari-live"></canvas>
         <div id="char-menu" class="char-menu"></div>
         <div class="dock">
           <div class="actions" id="actions"></div>
@@ -159,6 +160,7 @@
       <input id="media-root" spellcheck="false" />
       <p style="margin-top:16px">EDI base (default <code>http://localhost:5000</code>)</p>
       <input id="edi-url" spellcheck="false" />
+      <p style="margin-top:16px"><label><input type="checkbox" id="set-himari-live" checked /> Animated Himari</label></p>
       <div class="row">
         <button class="ghost" id="set-cancel">Cancel</button>
         <button class="primary" id="set-save">Save path</button>
@@ -166,8 +168,10 @@
     </div>
   </div>
   <div class="toast" id="toast"></div>
+  <script src="js/pixi.min.js"></script>
+  <script src="js/himari_live.js"></script>
   <script src="js/edi.js"></script>
-  <script>window.LG_WEB=true;window.LG_WEB_STAMP='2026-10-09 15:40 BST · web 2026-10-10 08:15 BST';</script>
+  <script>window.LG_WEB=true;window.LG_WEB_STAMP='2026-10-13 10:05 BST · web 2026-10-13 10:14 BST';</script>
   <script src="js/web.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/data.js"></script>
