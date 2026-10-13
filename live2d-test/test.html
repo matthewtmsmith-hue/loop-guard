@@ -1,0 +1,71 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex"><title>Himari live test</title>
+<style>html,body{margin:0;height:100%;background:linear-gradient(#2b2f3a,#151821);overflow:hidden;font-family:system-ui,sans-serif}
+#box{position:fixed;left:4%;right:4%;bottom:4%;background:rgba(10,12,20,.82);color:#f3eef0;border:1px solid #6b7a5a;border-radius:12px;padding:12px 16px;min-height:3.2em;font-size:17px}
+#box b{color:#9fd36b;display:block;font-size:14px;margin-bottom:4px}
+#ctl{position:fixed;top:12px;right:12px;display:flex;gap:8px}button{font-size:15px;padding:8px 14px;border-radius:8px;border:0;background:#6b9a3a;color:#fff}
+</style></head><body>
+<div id="ctl"><button id="talk">Talk</button><button id="still">Static</button></div>
+<div id="box"><b>Himari</b><span id="txt"></span></div>
+<script src="pixi.min.js"></script>
+<script>
+(async()=>{
+const W=696,H=900, W8=await (await fetch('weights.json')).json();
+const app=new PIXI.Application({resizeTo:window,backgroundAlpha:0,antialias:true,resolution:Math.min(devicePixelRatio,2),autoDensity:true});
+document.body.prepend(app.view);
+const [tb,te,tm]=await Promise.all(['body.png','eyes_closed.png','mouth_open.png'].map(u=>PIXI.Assets.load(u)));
+const root=new PIXI.Container();app.stage.addChild(root);
+const plane=new PIXI.SimplePlane(tb,W8.gx,W8.gy);root.addChild(plane);
+const eyes=new PIXI.Sprite(te),mouth=new PIXI.Sprite(tm);
+eyes.anchor.set(.5);mouth.anchor.set(.5);root.addChild(eyes,mouth);
+const EYE={x:200+te.width/2,y:200+te.height/2},MOU={x:287+tm.width/2,y:331+tm.height/2};
+eyes.alpha=0;mouth.alpha=0;
+const buf=plane.geometry.getBuffer('aVertexPosition'),base=Float32Array.from(buf.data);
+const sm=(a,b,x)=>{x=Math.min(1,Math.max(0,(x-a)/(b-a)));return x*x*(3-2*x)};
+let still=false;
+function deform(x,y,t,hw){
+  if(still)return[x,y,0];
+  const br=Math.sin(t*2*Math.PI/3.8);
+  const head=1-sm(395,475,y);
+  // breathing: torso stretches up from the bottom, chest widens slightly
+  let dy=-(H-Math.max(y,430))*0.0055*br - 0;
+  let dx=(x-348)*0.006*br*Math.exp(-(((y-660)/140)**2));
+  // head tilt + nod about the neck
+  const th=(0.014*Math.sin(t*2*Math.PI/6.1)+0.006*Math.sin(t*2*Math.PI/2.9+1))*head;
+  const px=345,py=450,rx=x-px,ry=y-py;
+  dx+=rx*Math.cos(th)-ry*Math.sin(th)-rx; dy+=rx*Math.sin(th)+ry*Math.cos(th)-ry;
+  dy+=head*1.2*Math.sin(t*2*Math.PI/6.1+.7);
+  // hair sway: tips move more, damped over the face
+  const face=sm(0,1,1-Math.max(Math.abs(x-318)/110,Math.abs(y-285)/85));
+  const tip=sm(120,360,y);
+  dx+=hw*(1-face*.85)*tip*(2.6*Math.sin(t*2*Math.PI/2.6-y*.012)+1.1*Math.sin(t*2*Math.PI/1.7+x*.02));
+  return[x+dx,y+dy,th];
+}
+function weight(i,j){return W8.hair[j][i]}
+let blinkAt=1.2,blinkT=-1;
+let talking=false,mouthT=0;
+function layout(){const s=Math.min(app.screen.height/H*1.02,app.screen.width/W*1.15);root.scale.set(s);root.x=(app.screen.width-W*s)/2;root.y=app.screen.height-H*s+H*s*.02}
+window.addEventListener('resize',layout);layout();
+const t0=performance.now();
+app.ticker.add(()=>{
+  const t=(performance.now()-t0)/1000;
+  const d=buf.data;
+  for(let j=0,k=0;j<W8.gy;j++)for(let i=0;i<W8.gx;i++,k+=2){const p=deform(base[k],base[k+1],t,weight(i,j));d[k]=p[0];d[k+1]=p[1];}
+  buf.update();
+  for(const [s,a] of [[eyes,EYE],[mouth,MOU]]){const p=deform(a.x,a.y,t,0);s.position.set(p[0],p[1]);s.rotation=p[2];}
+  // blink: quick close, short hold, slower open; occasional double blink
+  if(t>blinkAt&&blinkT<0){blinkT=t}
+  if(blinkT>=0){const u=t-blinkT;eyes.alpha=u<.12?1:0;
+    if(u>.12){blinkT=-1;blinkAt=t+(Math.random()<.18?.25:2.2+Math.random()*3.5)}}
+  if(talking&&t>mouthT){mouth.alpha=mouth.alpha>.5?(Math.random()<.4?.55:0):1;mouthT=t+.07+Math.random()*.08}
+  if(!talking)mouth.alpha=Math.max(0,mouth.alpha-.25);
+});
+const lines=["Oh — you're home. I saved you some rice, it's still warm.","Don't look at me like that. I'm just tired, okay?","Do you ever think about leaving this town? Just… going?"];let li=0,typing=null;
+function say(){clearInterval(typing);const s=lines[li++%lines.length];let n=0;const el=document.getElementById('txt');el.textContent='';talking=true;
+  typing=setInterval(()=>{n++;el.textContent=s.slice(0,n);const c=s[n-1];
+    talking=!/[.,!?…—]/.test(c||'');if(n>=s.length){clearInterval(typing);talking=false}},45)}
+document.getElementById('talk').onclick=say;
+document.getElementById('still').onclick=e=>{still=!still;e.target.textContent=still?'Live':'Static'};
+setTimeout(say,1500);
+})();
+</script></body></html>
