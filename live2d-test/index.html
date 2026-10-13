@@ -48,10 +48,14 @@ app.ticker.add(()=>{const t=FZ!==null?FZ:(performance.now()-t0)/1000;
   if(FZ===null&&t>blinkAt&&blinkT<0)blinkT=t;
   let e=0;if(blinkT>=0){const u=t-blinkT;e=u<.035?1:u<.105?2:u<.14?1:0;if(u>=.14){blinkT=-1;blinkAt=t+(Math.random()<.18?.22:2.2+Math.random()*3.5)}}
   if(Q.has('eye'))e=+Q.get('eye');if(Q.has('mouth'))mouth=+Q.get('mouth');
-  eh.visible=e===1;ec.visible=e===2;ms.visible=mouth===1;mw.visible=mouth===2;
+  eh.visible=e===1;ec.visible=e===2;for(const [s,v] of [[ms,1],[mw,2]]){const tgt=mouth===v?1:0;s.alpha+= (tgt-s.alpha)*0.55;if(Math.abs(tgt-s.alpha)<.02)s.alpha=tgt;s.visible=s.alpha>0;}
 });
 const lines=["Oh — you're home. I saved you some rice, it's still warm.","Don't look at me like that. I'm just tired, okay?","Do you ever think about leaving this town? Just… going?"];let li=0,typing=null;
-function shape(c,prev){if(!c||/[\s.,!?…—'"]/.test(c))return 0;if(/[aeiouAEIOU]/.test(c))return /[aoAO]/.test(c)?2:(prev===2?1:2);return Math.random()<.55?1:0}
+let lastChange=0;
+function shape(c,prev){const now=performance.now();if(!c||/[\s.,!?…—'"]/.test(c)){lastChange=now;return 0}
+  if(now-lastChange<135)return prev; let n=prev;
+  if(/[aoAO]/.test(c)&&prev!==2&&Math.random()<.45)n=2; else if(/[aeiouyAEIOUY]/.test(c))n=prev===1?0:1; else n=prev===0?1:0;
+  if(n!==prev)lastChange=now;return n}
 function say(){clearInterval(typing);const s=lines[li++%lines.length];let n=0;const el=document.getElementById('txt');el.textContent='';
   typing=setInterval(()=>{n++;el.textContent=s.slice(0,n);mouth=shape(s[n-1],mouth);if(n>=s.length){clearInterval(typing);setTimeout(()=>mouth=0,60)}},48)}
 document.getElementById('talk').onclick=say;
